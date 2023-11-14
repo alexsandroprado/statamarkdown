@@ -1,0 +1,69 @@
+---
+title: "Statamarkdown"
+format: html
+editor: visual
+author: Alexsandro Prado
+---
+
+```{r download-stata, warning=TRUE, include=FALSE}
+curl::multi_download(
+  "https://www.dropbox.com/scl/fi/v0wsbijmry0fbuquswhvg/stata15.zip?rlkey=o13mey637zr65sl3dy4q5js6k&dl=1",
+  "stata15.zip",
+  resume = F, progress = TRUE
+)
+
+
+dir=getwd()
+unzip("stata15.zip", exdir = dir)
+```
+
+```{r config-statamarkdown, echo=FALSE, message=FALSE}
+
+if (!require(Statamarkdown)) {
+  install_github("hemken/Statamarkdown")
+}
+
+library(Statamarkdown)
+home <- getwd()
+exec <- '/stata15/Stata-64.exe'
+
+# Combine tudo em uma string de comando sem aspas em torno do RunAsDate
+stataexe <- sprintf('%s%s', home, exec)
+
+knitr::opts_chunk$set(engine.path=list(stata=stataexe))
+
+
+```
+
+```{stata estatistica-descritiva}
+
+
+sysuse auto
+summarize
+
+
+
+```
+
+```{stata frequencia, echo=FALSE, cleanlog=FALSE}
+sysuse auto
+tab1 foreign rep78
+```
+
+```{stata, echo=FALSE, cleanlog=FALSE}
+sysuse auto
+ttest mpg, by(foreign)
+```
+
+```{stata grafico, echo=1, results="hide"}
+sysuse auto
+graph box mpg, over(foreign)
+graph export "boxplot.svg", replace
+```
+
+```{stata oaxaca-blinder}
+ssc install oaxaca, replace
+sysuse oaxaca, clear
+oaxaca lnwage educ exper tenure, by(female)
+
+```
